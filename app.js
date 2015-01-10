@@ -7,6 +7,7 @@ var formidable = require('formidable')
   , fs = require('fs')
   , path = require('path')
   , options = {
+    uploadDataFieldName: 'Filedata',
     uploadDir: __dirname + '/public/files',
     host: "http://localhost:3000",
     port: 3000
@@ -42,11 +43,20 @@ http.createServer(function (req, res) {
         }));
       }
 
-      var fileName = path.basename(files.upload.path);
+      //console.log(files);
+      var fileObj = files[options.uploadDataFieldName];
+      if (!fileObj) {
+        return res.end(JSON.stringify({
+          "error": 2,
+          "msg": 'no uploadData field name'
+        }));
+      }
+
+      var fileName = path.basename(fileObj.path);
       res.end(JSON.stringify({
         "error": 0,
         "name": fileName,
-        "type": files.upload.type,
+        "type": fileObj.type,
         "url": options.host + '/files/' + fileName
       }));
     });
@@ -58,7 +68,7 @@ http.createServer(function (req, res) {
     res.end(
       '<form action="/upload" enctype="multipart/form-data" method="post">'+
       '<input type="text" name="title"><br>'+
-      '<input type="file" name="upload" multiple="multiple"><br>'+
+      '<input type="file" name="'+ options.uploadDataFieldName +'" multiple="multiple"><br>'+
       '<input type="submit" value="Upload">'+
       '</form>'
     );
